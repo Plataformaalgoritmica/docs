@@ -632,7 +632,7 @@ describe('server', () => {
       expect(res.statusCode).toBe(302)
       expect(res.headers['set-cookie']).toBeUndefined()
       // no cache control because a language prefix had to be injected
-      expect(res.headers['cache-control']).toBeUndefined()
+      expect(res.headers['cache-control']).toBe('private, no-store')
     })
 
     test('redirects old articles to their slugified URL', async () => {
@@ -702,7 +702,8 @@ describe('server', () => {
       expect(res.statusCode).toBe(302)
       expect(res.headers.location.startsWith('/en/')).toBe(true)
       expect(res.headers['set-cookie']).toBeUndefined()
-      expect(res.headers['cache-control']).toBeUndefined()
+      // no cache control because a language prefix had to be injected
+      expect(res.headers['cache-control']).toBe('private, no-store')
     })
 
     test('redirects that not only injects /en/ should have cache-control', async () => {
@@ -775,9 +776,10 @@ describe('server', () => {
 
 describe('URLs by language', () => {
   test('heading IDs and links on translated pages are in English', async () => {
-    const $ = await getDOM('/ja/github/site-policy/github-terms-of-service')
+    const $ = await getDOM('/ja/site-policy/github-terms/github-terms-of-service')
     expect($.res.statusCode).toBe(200)
-    expect($('h1')[0].children[0].data).toBe('GitHub利用規約')
+    // This check is true on either the translated version of the page, or when the title is pending translation and is in English.
+    expect($('h1')[0].children[0].data).toMatch(/(GitHub利用規約|GitHub Terms of Service)/)
     expect($('h2 a[href="#summary"]').length).toBe(1)
   })
 })
